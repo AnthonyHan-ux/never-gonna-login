@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>加一登录 · 耐心也是一种验证</title>
+  <style>
+    :root { color-scheme: light; --ink: #252821; --muted: #7d8175; --green: #d5f58a; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; min-height: 100svh;
+      background: #f5f5ee; color: var(--ink);
+      font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+      display: grid; place-items: center; padding: 32px 20px;
+    }
+    button { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button:focus-visible { outline: 3px solid #699c26; outline-offset: 5px; }
+    button:disabled { cursor: not-allowed; opacity: .45; }
+    .page { width: min(100%, 480px); }
+    .brand { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 25px; }
+    .brand-icon {
+      display: grid; place-items: center; width: 28px; height: 28px;
+      border-radius: 9px; background: var(--ink); color: var(--green); font-size: 23px; line-height: 1;
+    }
+    .brand-name { font-weight: 800; font-size: 15px; letter-spacing: 2px; }
+    .card {
+      padding: 36px; border: 1px solid #e7e8df; border-radius: 26px;
+      background: #fff; box-shadow: 0 12px 45px #303a1810;
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px;
+      color: #5c683f; background: #f0f6e5; border-radius: 6px; font-size: 11px; letter-spacing: 1px;
+    }
+    .dot { width: 5px; height: 5px; border-radius: 50%; background: #7d9e49; }
+    h1 { margin: 21px 0 10px; font-size: 30px; letter-spacing: -1px; line-height: 1.3; }
+    .intro { margin: 0 0 29px; color: var(--muted); font-size: 13px; line-height: 1.8; }
+    .answer { margin: -12px 0 24px; padding: 11px 13px; background: #f0f6e5; color: #64734b; font-size: 11px; border-radius: 9px; line-height: 1.8; }
+    .answer strong { display: block; color: #44592a; font: 600 19px/1.5 Consolas, monospace; letter-spacing: 1px; }
+    .field-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .field-label label { font-size: 12px; font-weight: 700; }
+    .readonly { color: #8a8e82; font-size: 10px; display: flex; align-items: center; gap: 4px; }
+    .readonly svg { width: 12px; height: 12px; }
+    .number-box { position: relative; padding: 21px 12px 18px; border-radius: 12px; background: #f7f8f2; border: 1px solid #e8ebdf; }
+    output {
+      display: block; text-align: center; white-space: nowrap;
+      font: 500 clamp(22px, 6.8vw, 34px)/1.2 Consolas, "SFMono-Regular", monospace;
+      letter-spacing: .065em; font-variant-numeric: tabular-nums;
+    }
+    .number-caption { margin: 11px 0 0; text-align: center; color: #929788; font-size: 10px; letter-spacing: 1px; }
+    .counter { margin: 14px 0 23px; display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 11px; gap: 8px; }
+    .counter strong { color: #555d49; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .increment {
+      width: 100%; min-height: 83px; border: 0; border-radius: 13px;
+      background: var(--ink); color: var(--green); display: flex;
+      justify-content: center; align-items: center; gap: 13px;
+      transition: transform .1s ease, background .15s ease; touch-action: manipulation;
+    }
+    .increment:hover:not(:disabled) { background: #343c2b; }
+    .increment:active:not(:disabled) { transform: scale(.975); }
+    .increment .plus { font-size: 34px; line-height: 1; font-weight: 300; }
+    .increment .one { font: 500 36px/1 Consolas, monospace; }
+    .button-caption { text-align: center; color: #94988b; margin: 10px 0 24px; font-size: 10px; }
+    .actions { display: flex; gap: 11px; }
+    .actions button { border-radius: 10px; padding: 13px 15px; font-size: 12px; font-weight: 600; min-height: 45px; }
+    .reset { background: #fff; color: #73786a; border: 1px solid #e3e6db; flex: 1; }
+    .reset:hover { background: #f7f8f3; }
+    .login { background: var(--green); color: #33451d; border: 1px solid var(--green); flex: 1.5; }
+    .login:hover { background: #c9ec79; }
+    .verification-option { display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 10px; margin: 0 0 13px; padding: 14px; background: #f7f8f2; border: 1px solid #e8ebdf; border-radius: 10px; text-align: left; color: #505c40; }
+    .verification-option b { font-size: 12px; font-weight: 600; }
+    .verification-option small { display: block; margin-top: 4px; color: #969d89; font-size: 10px; }
+    .verification-option:hover { background: #eff4e4; }
+    dialog { width: min(420px, calc(100% - 28px)); max-height: calc(100svh - 32px); margin: auto; padding: 30px; color: var(--ink); background: #fff; border: 1px solid #e7e8df; border-radius: 24px; box-shadow: 0 24px 90px #25282130; overflow-y: auto; }
+    dialog::backdrop { background: #25282166; backdrop-filter: blur(5px); }
+    .dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 12px; }
+    .dialog-header h2 { margin: 0; font-size: 23px; }
+    .close { flex-shrink: 0; width: 30px; height: 30px; border: 0; border-radius: 50%; background: #f3f5ed; color: #7d8571; font-size: 20px; }
+    .dialog-intro { font-size: 11px; color: #848d76; line-height: 1.8; margin: 0 0 18px; }
+    .challenge { padding: 18px 14px; margin-bottom: 22px; text-align: center; background: #f0f6e5; border: 1px solid #e2ebd3; border-radius: 12px; }
+    .challenge-label { color: #6d7e52; font-size: 11px; }
+    .challenge-code { color: #435b26; font-size: 31px; margin: 11px 0; letter-spacing: .17em; }
+    .countdown { font-size: 11px; color: #7e8a6b; }
+    .countdown strong { color: #526d33; font-variant-numeric: tabular-nums; }
+    .code-field-label { font-size: 12px; font-weight: 600; display: block; margin-bottom: 10px; }
+    .code-entry { margin-bottom: 14px; }
+    .code-increment { min-height: 65px; margin-bottom: 12px; }
+    .dialog-rule { color: #969e88; font-size: 10px; line-height: 1.8; margin: 14px 0 0; text-align: center; }
+    .message { margin: 17px 0 0; min-height: 38px; font-size: 11px; line-height: 1.7; color: #8b907f; text-align: center; overflow-wrap: anywhere; }
+    .message[data-kind="error"] { color: #b35c43; }
+    .message[data-kind="success"] { color: #507e2b; }
+    .rule { margin-top: 5px; padding-top: 20px; border-top: 1px dashed #e6e8df; display: flex; gap: 10px; align-items: flex-start; }
+    .rule-icon {
+      background: #f4f5ef; color: #818872; width: 25px; height: 25px; flex-shrink: 0;
+      border-radius: 8px; display: grid; place-items: center; font: 13px Georgia, serif;
+    }
+    .rule p { margin: 0; font-size: 11px; color: #7f8574; line-height: 1.8; }
+    .rule b { color: #535d44; font-weight: 600; }
+    footer { text-align: center; margin-top: 22px; color: #9a9f90; font-size: 10px; line-height: 1.9; }
+    footer span { display: block; color: #afb3a7; font-size: 9px; letter-spacing: 1px; }
+    @media (max-width: 380px) {
+      body { padding: 22px 14px; }
+      .card { padding: 27px 22px; border-radius: 21px; }
+      h1 { font-size: 27px; }
+      .counter { font-size: 10px; }
+      dialog { padding: 24px 20px; border-radius: 20px; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="brand" aria-label="加一登录">
+      <span class="brand-icon" aria-hidden="true">+</span>
+      <span class="brand-name">ONE BY ONE</span>
+    </div>
+    <section class="card" aria-labelledby="title">
+      <div class="eyebrow"><span class="dot" aria-hidden="true"></span>耐心也是一种验证</div>
+      <h1 id="title">手机号登录</h1>
+      <p class="intro">每次只加一点点。<br>总有一天，你会点到自己的手机号。</p>
+      <div class="answer">正确手机号，答案直接告诉你：<strong id="correct-phone">18888888888</strong></div>
+
+      <div class="field-label">
+        <label for="phone">你的手机号</label>
+        <span class="readonly">
+          <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="7" width="10" height="7" rx="2"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>
+          只许加一，禁止输入
+        </span>
+      </div>
+      <div class="number-box">
+        <output id="phone" aria-label="当前手机号" aria-live="off">00000000000</output>
+        <p class="number-caption">从零开始 · 十一位 · 一步一步来</p>
+      </div>
+      <div class="counter">
+        <span>本轮已点击 <strong id="count">0</strong> 次</span>
+        <span>没有捷径 ↗</span>
+      </div>
+
+      <button id="increment" class="increment" type="button" aria-label="手机号加一">
+        <span class="plus" aria-hidden="true">+</span><span class="one" aria-hidden="true">1</span>
+      </button>
+      <p class="button-caption">一次点击，只加 1。不支持长按连加。</p>
+
+      <button id="open-verification" class="verification-option" type="button" aria-haspopup="dialog" aria-controls="verification-dialog">
+        <span><b>验证码</b><small>随机 6 位数字，每 30 秒换一个答案</small></span><span aria-hidden="true">↗</span>
+      </button>
+      <div class="actions">
+        <button id="reset" class="reset" type="button">↺ 重置归零</button>
+        <button id="login" class="login" type="button">登录 →</button>
+      </div>
+      <p id="message" class="message" role="status" aria-live="polite" aria-atomic="true">准备好了吗？先点一下 +1 试试。</p>
+
+      <div class="rule">
+        <span class="rule-icon" aria-hidden="true">i</span>
+        <p><b>点过头了？那就重新开始。</b><br>这里没有 −1 按钮，重置后所有数字归零。</p>
+      </div>
+    </section>
+    <footer>纯前端趣味演示 · 不发送、不保存手机号<span>慢慢来，真的会很慢。</span></footer>
+  </main>
+  <dialog id="verification-dialog" aria-labelledby="verification-title" aria-describedby="verification-description">
+    <div class="dialog-header">
+      <h2 id="verification-title">验证码验证</h2>
+      <button id="close-verification" class="close" type="button" aria-label="关闭验证码">×</button>
+    </div>
+    <p id="verification-description" class="dialog-intro">答案就在这里，但只保留 30 秒。<br>让下面的数字和当前验证码完全一样，才能登录。</p>
+    <div class="challenge">
+      <div class="challenge-label">当前正确验证码</div>
+      <output id="current-code" class="challenge-code" aria-label="当前正确验证码" aria-live="polite">------</output>
+      <div class="countdown"><strong id="seconds-left">30</strong> 秒后自动换一个新答案</div>
+    </div>
+    <label class="code-field-label" for="code-input">你输入的验证码</label>
+    <div class="number-box code-entry">
+      <output id="code-input" aria-label="已输入的验证码" aria-live="off">000000</output>
+      <p class="number-caption">只许加一 · 禁止输入 · 没有减一</p>
+    </div>
+    <button id="code-increment" class="increment code-increment" type="button" aria-label="验证码加一">
+      <span class="plus" aria-hidden="true">+</span><span class="one" aria-hidden="true">1</span>
+    </button>
+    <div class="actions">
+      <button id="code-reset" class="reset" type="button">↺ 验证码归零</button>
+      <button id="verify-login" class="login" type="button">验证并登录 →</button>
+    </div>
+    <p id="code-message" class="message" role="status" aria-live="polite" aria-atomic="true">从 000000 开始，一下一下追上答案。</p>
+    <p class="dialog-rule">更新后旧码立即失效；输入的数字会保留。<br>手机号也必须等于 18888888888。</p>
+  </dialog>
+  <script>
+    'use strict';
+
+    const MAX_VALUE = 99_999_999_999;
+    const CORRECT_PHONE = '18888888888';
+    const CODE_MAX_VALUE = 999_999;
+    const CODE_LIFETIME_MS = 30_000;
+    const phone = document.getElementById('phone');
+    const count = document.getElementById('count');
+    const increment = document.getElementById('increment');
+    const reset = document.getElementById('reset');
+    const login = document.getElementById('login');
+    const message = document.getElementById('message');
+    const verificationDialog = document.getElementById('verification-dialog');
+    const openVerificationButton = document.getElementById('open-verification');
+    const closeVerificationButton = document.getElementById('close-verification');
+    const currentCodeOutput = document.getElementById('current-code');
+    const secondsLeft = document.getElementById('seconds-left');
+    const codeInput = document.getElementById('code-input');
+    const codeIncrement = document.getElementById('code-increment');
+    const codeReset = document.getElementById('code-reset');
+    const verifyLogin = document.getElementById('verify-login');
+    const codeMessage = document.getElementById('code-message');
+    let value = 0;
+    let codeValue = 0;
+    let currentCode = '';
+    let codeExpiresAt = 0;
+    let refreshTimer = null;
+
+    function showMessage(text, kind = '') {
+      message.textContent = text;
+      message.dataset.kind = kind;
+    }
+
+    function render() {
+      phone.textContent = String(value).padStart(11, '0');
+      count.textContent = value.toLocaleString('zh-CN');
+      increment.disabled = value >= MAX_VALUE;
+    }
+
+    function showCodeMessage(text, kind = '') {
+      codeMessage.textContent = text;
+      codeMessage.dataset.kind = kind;
+    }
+
+    function renderCodeInput() {
+      codeInput.textContent = String(codeValue).padStart(6, '0');
+      codeIncrement.disabled = codeValue >= CODE_MAX_VALUE;
+    }
+
+    function generateCode() {
+      let nextCode = 100_000 + Math.floor(Math.random() * 900_000);
+      if (String(nextCode) === currentCode) {
+        nextCode = 100_000 + (nextCode - 100_000 + 1) % 900_000;
+      }
+      currentCode = String(nextCode);
+      currentCodeOutput.textContent = currentCode;
+    }
+
+    function syncCode(now = Date.now()) {
+      if (!currentCode) return;
+      if (now >= codeExpiresAt) {
+        const elapsedPeriods = Math.floor((now - codeExpiresAt) / CODE_LIFETIME_MS) + 1;
+        generateCode();
+        codeExpiresAt += elapsedPeriods * CODE_LIFETIME_MS;
+        showCodeMessage('验证码已更新！旧答案失效，输入的数字保持不变。', 'error');
+        if (message.dataset.kind === 'success') {
+          showMessage('验证码已更新，需要使用当前答案重新验证。');
+        }
+      }
+      secondsLeft.textContent = String(Math.ceil((codeExpiresAt - now) / 1000));
+    }
+
+    function openVerification() {
+      if (!currentCode) {
+        generateCode();
+        codeExpiresAt = Date.now() + CODE_LIFETIME_MS;
+        refreshTimer = window.setInterval(() => syncCode(), 250);
+      }
+      syncCode();
+      if (!verificationDialog.open) verificationDialog.showModal();
+      codeIncrement.focus();
+    }
+
+    function attemptLogin() {
+      // Recheck time on submission, even if background timers were throttled.
+      syncCode();
+      const mobile = String(value).padStart(11, '0');
+      if (mobile !== CORRECT_PHONE) {
+        const text = '手机号不正确，只有 18888888888 可以通过验证。';
+        showMessage(text, 'error');
+        if (verificationDialog.open) showCodeMessage(text, 'error');
+        return;
+      }
+      if (!currentCode) {
+        openVerification();
+        showCodeMessage('手机号正确！请把验证码也点到当前答案。');
+        return;
+      }
+      if (String(codeValue).padStart(6, '0') !== currentCode) {
+        openVerification();
+        showCodeMessage('验证码不匹配，请对照当前答案继续 +1；过头只能归零。', 'error');
+        showMessage('手机号正确，验证码还没有追上当前答案。', 'error');
+        return;
+      }
+      showMessage('演示登录成功！手机号与当前验证码都验证通过。', 'success');
+      showCodeMessage('验证通过！手机号与当前验证码完全匹配。', 'success');
+    }
+
+    increment.addEventListener('click', () => {
+      if (value >= MAX_VALUE) return;
+      value += 1;
+      render();
+      if (codeMessage.dataset.kind === 'success') {
+        showCodeMessage('手机号已改变，需要重新验证。');
+      }
+      if (value === MAX_VALUE) {
+        showMessage('已经到达 11 位上限。想再来一次，只能重置归零。', 'error');
+      } else {
+        showMessage('又近了一点。点过头的话，只能重置哦。');
+      }
+    });
+
+    // Held keys must not turn a single activation into automatic increments.
+    [increment, codeIncrement].forEach((button) => {
+      button.addEventListener('keydown', (event) => {
+        if (event.repeat && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault();
+        }
+      });
+    });
+
+    reset.addEventListener('click', () => {
+      value = 0;
+      codeValue = 0;
+      render();
+      renderCodeInput();
+      showCodeMessage('验证码输入已归零，当前答案与倒计时保持不变。');
+      showMessage('已全部归零。没关系，我们从头再来。');
+    });
+
+    codeIncrement.addEventListener('click', () => {
+      syncCode();
+      if (codeValue >= CODE_MAX_VALUE) return;
+      codeValue += 1;
+      renderCodeInput();
+      if (codeValue === CODE_MAX_VALUE) {
+        showCodeMessage('已到达 999999，过头只能归零重新开始。', 'error');
+      } else {
+        showCodeMessage('再加一点点。提交时会核对那一刻的正确答案。');
+      }
+      if (message.dataset.kind === 'success') showMessage('验证码输入已改变，请重新验证。');
+    });
+
+    codeReset.addEventListener('click', () => {
+      syncCode();
+      codeValue = 0;
+      renderCodeInput();
+      showCodeMessage('验证码输入已归零，当前答案与倒计时保持不变。');
+      if (message.dataset.kind === 'success') showMessage('验证码输入已归零，请重新验证。');
+    });
+
+    openVerificationButton.addEventListener('click', openVerification);
+    closeVerificationButton.addEventListener('click', () => verificationDialog.close());
+    login.addEventListener('click', attemptLogin);
+    verifyLogin.addEventListener('click', attemptLogin);
+    document.addEventListener('visibilitychange', () => syncCode());
+    window.addEventListener('focus', () => syncCode());
+    window.addEventListener('pagehide', () => {
+      if (refreshTimer !== null) window.clearInterval(refreshTimer);
+    });
+    window.addEventListener('pageshow', () => {
+      if (currentCode) {
+        window.clearInterval(refreshTimer);
+        refreshTimer = window.setInterval(() => syncCode(), 250);
+        syncCode();
+      }
+    });
+
+    render();
+    renderCodeInput();
+  </script>
+</body>
+</html>
