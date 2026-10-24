@@ -1,17 +1,17 @@
-# Never Gonna Log In
+# Never Gonna Log In · 永远无法登录
 
-A playful frontend login demo that tests your patience, one click at a time. HTML, CSS, and JavaScript all live in a single file.
+一个考验耐心的纯前端整活登录页：答案明明就在眼前，你却只能一次加一，慢慢接近它。
 
-## How to play
+## 怎么玩
 
-- The phone number starts at `00000000000`. Reach `18888888888` by clicking **+1**.
-- No typing, pasting, or **-1**. Overshot? Reset and start over.
-- Open the verification-code dialog. Your entry starts at `000000` and follows the same **+1** and **Reset** rules.
-- Match the random six-digit target before it changes every **30 seconds**. Old codes expire immediately.
-- Both the phone number and the current code must match to show the simulated login success.
+- 手机号从 `00000000000` 开始，只能点击 **+1**，正确答案是页面上明码显示的 `18888888888`。
+- 不能手动输入、不能粘贴，也没有 **-1**。点过头了？只能重置归零。
+- 点击“验证码”打开弹窗，输入值从 `000000` 开始，同样只能 **+1** 或重置。
+- 当前正确验证码是随机的 6 位数字，每 **30 秒** 更新一次，旧码立即失效，已累加的输入值保留。
+- 提交时，手机号和当时的验证码必须同时匹配，才能看到模拟登录成功的提示。
 
-## Try it
+## 打开方式
 
-Download [phone-login.html](phone-login.html) and open it in your browser. No installation or server needed.
+下载 [phone-login.html](phone-login.html)，用浏览器打开即可。HTML、CSS、JS 全在这一个文件里，无需安装依赖或启动服务。
 
-This is a browser-only joke demo. It does not send SMS or authenticate real accounts.
+这是一个趣味演示，不发送短信，也不进行真实身份认证。祝你早日登录成功。
